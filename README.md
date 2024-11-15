@@ -1,2 +1,3 @@
 # LASER
-Takes in a .csv file of xy coordinates and depth data and provides analysis functions.
+Converts a .ply file to .pcd and then cleans up the data
+
