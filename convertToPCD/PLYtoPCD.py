@@ -32,7 +32,7 @@ def convert_ply_to_pcd(input_folder, output_folder):
 
 
 # Example usage
-input_folder = "/Users/lukebray/PycharmProjects/LASER/convertToPCD/inputPLY"  # Specify your input folder containing .ply files
-output_folder = "/Users/lukebray/PycharmProjects/LASER/convertToPCD/outputPLY"  # Specify your desired output folder for .pcd files
+input_folder = "path/to/inputFolder"  # Specify your input folder containing .ply files
+output_folder = "path/to/outputFolder"  # Specify your desired output folder for .pcd files
 
 convert_ply_to_pcd(input_folder, output_folder)
