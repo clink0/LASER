@@ -1,77 +1,115 @@
 import open3d as o3d
 import numpy as np
 
-def clean_and_cluster_point_cloud(input_file, output_file=None,
-                                  use_statistical_filter=True, use_radius_filter=True, remove_plane=True,
-                                  eps=0.05, min_points=100, min_cluster_size=500,
-                                  final_radius_filter=True):
+def cleanAndClusterPointCloud(inputFile, outputFile=None,
+                              useStatisticalFilter=True, useRadiusFilter=True, removePlane=True,
+                              eps=0.05, minPoints=100, minClusterSize=1000,
+                              finalRadiusFilter=True, minBoundingBoxSize=20):
+    """
+    Function to clean and cluster a point cloud.
+    """
     # Step 1: Load the point cloud from the PCD file
-    pcd = o3d.io.read_point_cloud(input_file)
-    if not pcd:
-        print(f"Failed to read the file: {input_file}")
-        return
+    print(f"Loading point cloud from '{inputFile}'...")
+    pcd = o3d.io.read_point_cloud(inputFile)
+    if pcd.is_empty():
+        print(f"Error: Failed to read the file '{inputFile}' or file is empty.")
+        return None
 
-    print(f"Loaded {input_file}, containing {len(pcd.points)} points")
+    print(f"Successfully loaded point cloud with {len(pcd.points)} points.")
 
     # Step 2: Remove NaN or Inf values
+    print("Removing NaN and Inf values...")
     points = np.asarray(pcd.points)
-    valid_indices = np.isfinite(points).all(axis=1)
-    cleaned_points = points[valid_indices]
-    cleaned_pcd = o3d.geometry.PointCloud()
-    cleaned_pcd.points = o3d.utility.Vector3dVector(cleaned_points)
+    validIndices = np.isfinite(points).all(axis=1)
+    cleanedPoints = points[validIndices]
+    cleanedPcd = o3d.geometry.PointCloud()
+    cleanedPcd.points = o3d.utility.Vector3dVector(cleanedPoints)
+    print(f"Removed invalid points. Remaining points: {len(cleanedPoints)}.")
 
-    # Step 3: Apply Statistical Outlier Removal (optional)
-    if use_statistical_filter:
-        cleaned_pcd, _ = cleaned_pcd.remove_statistical_outlier(nb_neighbors=20, std_ratio=2.0)
+    # Step 3: Remove the largest plane (optional)
+    if removePlane:
+        print("Removing flat background using plane segmentation...")
+        planeModel, inliers = cleanedPcd.segment_plane(distance_threshold=0.01,
+                                                       ransac_n=3,
+                                                       num_iterations=1000)
+        print(f"Detected plane with coefficients: {planeModel}")
+        cleanedPcd = cleanedPcd.select_by_index(inliers, invert=True)
+        print(f"Points remaining after plane removal: {len(cleanedPcd.points)}")
 
-    # Step 4: Apply Radius Outlier Removal (optional)
-    if use_radius_filter:
-        cleaned_pcd, _ = cleaned_pcd.remove_radius_outlier(nb_points=16, radius=0.05)
+    if cleanedPcd.is_empty():
+        print("Error: No points left after plane removal.")
+        return None
 
-    # Step 5: Apply Euclidean Clustering to isolate objects
-    labels = np.array(cleaned_pcd.cluster_dbscan(eps=eps, min_points=min_points, print_progress=True))
+    # Step 4: Apply Statistical Outlier Removal (optional)
+    if useStatisticalFilter:
+        print("Applying Statistical Outlier Removal...")
+        cleanedPcd, _ = cleanedPcd.remove_statistical_outlier(nb_neighbors=20, std_ratio=2.0)
+        print(f"Points remaining after Statistical Outlier Removal: {len(cleanedPcd.points)}")
 
-    max_label = labels.max()
-    clustered_pcd = o3d.geometry.PointCloud()
-    for i in range(max_label + 1):
+    # Step 5: Apply Radius Outlier Removal (optional)
+    if useRadiusFilter:
+        print("Applying Radius Outlier Removal...")
+        cleanedPcd, _ = cleanedPcd.remove_radius_outlier(nb_points=16, radius=0.05)
+        print(f"Points remaining after Radius Outlier Removal: {len(cleanedPcd.points)}")
+
+    if cleanedPcd.is_empty():
+        print("Error: No points left after filtering.")
+        return None
+
+    # Step 6: Apply Euclidean Clustering to isolate objects
+    print("Applying Euclidean Clustering...")
+    labels = np.array(cleanedPcd.cluster_dbscan(eps=eps, min_points=minPoints, print_progress=True))
+    maxLabel = labels.max()
+    print(f"Found {maxLabel + 1} clusters.")
+
+    clusteredPcd = o3d.geometry.PointCloud()
+    for i in range(maxLabel + 1):
         indices = np.where(labels == i)[0]
-        if len(indices) >= min_cluster_size:
-            clustered_pcd += cleaned_pcd.select_by_index(indices)
+        cluster = cleanedPcd.select_by_index(indices)
 
-    # Step 6: Apply final Radius Outlier Removal (optional)
-    if final_radius_filter:
-        clustered_pcd, _ = clustered_pcd.remove_radius_outlier(nb_points=50, radius=0.02)
+        # Filter out clusters based on the bounding box size
+        bbox = cluster.get_axis_aligned_bounding_box()
+        bboxSize = np.array(bbox.get_extent())
 
-    # Step 7: Calculate object size using the Axis-Aligned Bounding Box (AABB)
-    if len(clustered_pcd.points) > 0:
-        # Calculate the Axis-Aligned Bounding Box
-        aabb = clustered_pcd.get_axis_aligned_bounding_box()
-        aabb_extent = aabb.get_extent()
-        print(f"AABB dimensions (Length x Width x Height): {aabb_extent}")
+        if len(indices) >= minClusterSize and min(bboxSize) >= minBoundingBoxSize:
+            print(f"Adding cluster {i} with {len(indices)} points and bounding box size {bboxSize}.")
+            clusteredPcd += cluster
+        else:
+            print(f"Skipping small/insignificant cluster {i}.")
 
-        # Visualize the AABB
-        aabb.color = (0, 1, 0)  # Color the AABB green for visualization
-        o3d.visualization.draw_geometries([clustered_pcd, aabb])
-    else:
-        print("No points left in the point cloud after filtering.")
+    if clusteredPcd.is_empty():
+        print("Error: No clusters found after filtering.")
+        return None
+
+    # Step 7: Apply final Radius Outlier Removal (optional)
+    if finalRadiusFilter:
+        print("Applying final Radius Outlier Removal...")
+        clusteredPcd, _ = clusteredPcd.remove_radius_outlier(nb_points=50, radius=0.02)
+        print(f"Points remaining after final Radius Outlier Removal: {len(clusteredPcd.points)}")
+
+    if clusteredPcd.is_empty():
+        print("Error: No points left after the final filtering.")
+        return None
 
     # Step 8: Save the final point cloud (optional)
-    if output_file:
-        o3d.io.write_point_cloud(output_file, clustered_pcd)
-        print(f"Saved cleaned and clustered point cloud to {output_file}")
+    if outputFile:
+        o3d.io.write_point_cloud(outputFile, clusteredPcd)
+        print(f"Saved cleaned and clustered point cloud to '{outputFile}'")
 
-    return clustered_pcd
+    print("Processing complete.")
+    return clusteredPcd
 
 # Example usage
-input_file = "path/to/inputFile.pcd"
-output_file = "output.pcd"
+inputFile = "/Users/lukebray/PycharmProjects/LASER/convertToPCD/outputPCD/ply_775698.16700000001583.pcd"
+outputFile = "output_filtered.pcd"
 
-# Run the function with clustering and AABB size calculation
-clean_and_cluster_point_cloud(input_file, output_file,
-                              use_statistical_filter=True,
-                              use_radius_filter=True,
-                              remove_plane=True,
-                              eps=0.02,
-                              min_points=1000,
-                              min_cluster_size=2000,
-                              final_radius_filter=True)
+# Run the function with clustering, plane removal, and bounding box filtering
+cleanAndClusterPointCloud(inputFile, outputFile,
+                          useStatisticalFilter=True,
+                          useRadiusFilter=True,
+                          removePlane=True,
+                          eps=0.02,
+                          minPoints=1000,
+                          minClusterSize=500,
+                          finalRadiusFilter=True,
+                          minBoundingBoxSize=0.05)
