@@ -101,7 +101,7 @@ def cleanAndClusterPointCloud(inputFile, outputFile=None,
 
 # Example usage
 inputFile = "/Users/lukebray/PycharmProjects/LASER/convertToPCD/outputPCD/ply_775698.16700000001583.pcd"
-outputFile = "output_filtered.pcd"
+outputFile = "filtered.pcd"
 
 # Run the function with clustering, plane removal, and bounding box filtering
 cleanAndClusterPointCloud(inputFile, outputFile,
