@@ -2,10 +2,7 @@ import numpy as np
 import open3d as o3d
 import matplotlib.pyplot as plt
 
-def project_pcd_to_2d_with_whitespace(pcd_file, image_size=500, output_image="point_cloud_projection.png"):
-    # Load the PCD file
-    pcd = o3d.io.read_point_cloud(pcd_file)
-
+def pcd2dWhitespace(pcd, image_size=500, output_image="point_cloud_projection.png"):
     # Extract points as a NumPy array
     points = np.asarray(pcd.points)
 
@@ -35,13 +32,13 @@ def project_pcd_to_2d_with_whitespace(pcd_file, image_size=500, output_image="po
     # Save the image
     plt.imsave(output_image, image, cmap='gray')
 
-    return whitespace_count
+    return float(whitespace_count)
 
 
 # Usage
-pcd_file = "background.pcd"  # Replace with your PCD file path
-image_size = 500  # Size of the output image
-output_image = "point_cloud_projection.png"
+#pcd_file = "background.pcd"  # Replace with your PCD file path
+#image_size = 500  # Size of the output image
+#output_image = "point_cloud_projection.png"
 
-whitespace_count = project_pcd_to_2d_with_whitespace(pcd_file, image_size, output_image)
-print(f"Whitespace pixels in the image: {whitespace_count}")
+#whitespace_count = project_pcd_to_2d_with_whitespace(pcd_file, image_size, output_image)
+#print(f"Whitespace pixels in the image: {whitespace_count}")

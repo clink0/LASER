@@ -2,10 +2,9 @@ import open3d as o3d
 import numpy as np
 
 
-def main():
+def findWhiteSpace(pcd_file, output_image= "point_cloud_projection.png"):
     # Step 1: Load the PCD file
-    file_path = "/Users/lukebray/PycharmProjects/LASER/convertToPCD/outputPCD/PLY_197182.18200000000070.pcd"  # Replace with your PCD file path
-    pcd = o3d.io.read_point_cloud(file_path)
+    pcd = o3d.io.read_point_cloud(pcd_file)
     print("Point cloud loaded successfully.")
 
     # Step 2: Segment the plane using RANSAC
@@ -38,17 +37,14 @@ def main():
     filtered_cloud = other_cloud.crop(bounding_box)
 
     # Step 5: Visualize the results
-    print("Visualizing the background (plane)...")
-    o3d.visualization.draw_geometries([plane_cloud], window_name='Background', point_show_normal=False)
+    #print("Visualizing the background (plane)...")
+    #o3d.visualization.draw_geometries([plane_cloud], window_name='Background', point_show_normal=False)
 
-    print("Visualizing the objects within the bounding box...")
-    o3d.visualization.draw_geometries([filtered_cloud], window_name='Filtered Objects', point_show_normal=False)
+    #print("Visualizing the objects within the bounding box...")
+    #o3d.visualization.draw_geometries([filtered_cloud], window_name='Filtered Objects', point_show_normal=False)
 
     # Step 6: Save the results (Optional)
-    o3d.io.write_point_cloud("background.pcd", plane_cloud)
-    o3d.io.write_point_cloud("filtered_objects.pcd", filtered_cloud)
+    #o3d.io.write_point_cloud("background.pcd", plane_cloud)
+    #o3d.io.write_point_cloud("filtered_objects.pcd", filtered_cloud)
     print("Segmented and filtered point clouds saved as 'background.pcd' and 'filtered_objects.pcd'.")
-
-
-if __name__ == "__main__":
-    main()
+    return plane_cloud
