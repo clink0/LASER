@@ -1,10 +1,26 @@
 import open3d as o3d
 import numpy as np
+import os
+
+def calculateBoundingBoxDimensions(pointCloud):
+    """
+    Calculates the dimensions of the oriented bounding box around the given point cloud.
+    Returns the bounding box and its dimensions.
+    """
+    if pointCloud.is_empty():
+        print("Error: Point cloud is empty.")
+        return None, None
+
+    print("Calculating oriented bounding box dimensions...")
+    bbox = pointCloud.get_oriented_bounding_box()
+    bboxSize = np.array(bbox.extent)  # Extent gives the length, width, and height of the OBB
+    print(f"Oriented bounding box dimensions: {bboxSize}")
+    return bbox, bboxSize
 
 def cleanAndClusterPointCloud(inputFile, outputFile=None,
                               useStatisticalFilter=True, useRadiusFilter=True, removePlane=True,
                               eps=0.05, minPoints=100, minClusterSize=1000,
-                              finalRadiusFilter=True, minBoundingBoxSize=20):
+                              finalRadiusFilter=True):
     """
     Function to clean and cluster a point cloud.
     """
@@ -67,12 +83,7 @@ def cleanAndClusterPointCloud(inputFile, outputFile=None,
         indices = np.where(labels == i)[0]
         cluster = cleanedPcd.select_by_index(indices)
 
-        # Filter out clusters based on the bounding box size
-        bbox = cluster.get_axis_aligned_bounding_box()
-        bboxSize = np.array(bbox.get_extent())
-
-        if len(indices) >= minClusterSize and min(bboxSize) >= minBoundingBoxSize:
-            print(f"Adding cluster {i} with {len(indices)} points and bounding box size {bboxSize}.")
+        if len(indices) >= minClusterSize:
             clusteredPcd += cluster
         else:
             print(f"Skipping small/insignificant cluster {i}.")
@@ -91,25 +102,46 @@ def cleanAndClusterPointCloud(inputFile, outputFile=None,
         print("Error: No points left after the final filtering.")
         return None
 
-    # Step 8: Save the final point cloud (optional)
+    # Step 8: Calculate bounding box dimensions and save final point cloud
+    bbox, bboxSize = calculateBoundingBoxDimensions(clusteredPcd)
+
     if outputFile:
         o3d.io.write_point_cloud(outputFile, clusteredPcd)
         print(f"Saved cleaned and clustered point cloud to '{outputFile}'")
 
     print("Processing complete.")
-    return clusteredPcd
+    return clusteredPcd, bbox, bboxSize
+
+def processFolder(folderPath, outputFolder):
+    """
+    Processes all PCD files in a given folder and saves the results in the output folder.
+    """
+    if not os.path.exists(outputFolder):
+        os.makedirs(outputFolder)
+
+    for fileName in os.listdir(folderPath):
+        if fileName.endswith(".pcd"):
+            inputFile = os.path.join(folderPath, fileName)
+            outputFile = os.path.join(outputFolder, f"filtered_{fileName}")
+            print(f"\nProcessing file: {inputFile}")
+            cleanedPcd, boundingBox, dimensions = cleanAndClusterPointCloud(
+                inputFile, outputFile,
+                useStatisticalFilter=True,
+                useRadiusFilter=True,
+                removePlane=True,
+                eps=0.2,
+                minPoints=1000,
+                minClusterSize=500,
+                finalRadiusFilter=True
+            )
+            if dimensions is not None:
+                print(f"Processed {fileName}: Bounding box dimensions: {dimensions}")
+            else:
+                print(f"Failed to process {fileName}")
 
 # Example usage
-inputFile = "/Users/lukebray/PycharmProjects/LASER/convertToPCD/outputPCD/ply_775698.16700000001583.pcd"
-outputFile = "filtered.pcd"
+inputFolder = "/Users/lukebray/PycharmProjects/LASER/convertToPCD/outputPCD"
+outputFolder = "/Users/lukebray/PycharmProjects/LASER/findDimensions/output"
 
-# Run the function with clustering, plane removal, and bounding box filtering
-cleanAndClusterPointCloud(inputFile, outputFile,
-                          useStatisticalFilter=True,
-                          useRadiusFilter=True,
-                          removePlane=True,
-                          eps=0.02,
-                          minPoints=1000,
-                          minClusterSize=500,
-                          finalRadiusFilter=True,
-                          minBoundingBoxSize=0.05)
+# Process all files in the folder
+processFolder(inputFolder, outputFolder)
