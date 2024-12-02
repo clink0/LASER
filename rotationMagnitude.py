@@ -8,10 +8,12 @@ def calRotationMagnitude(area,timeStamp):
     # Initalizing Arrays for local mins and maxs
     minArr = np.zeros(int(len(timeStamps)))
     maxArr = np.zeros(int(len(timeStamps)))
-    areaVar = .03
+    areaVar = .01
     # Finding local mins and maxs
-    for w in range(0, len(areas) - 1):
-        if w >= len(areas) - 1:
+    for w in range(0, len(areas) - 2):
+        if w <= len(areas) - 5:
+            w +=5
+        if w >= len(areas) - 2:
             break
         if (areas[w]+areaVar <= areas[w + 1]  and areas[w]+areaVar <= areas[w - 1])  or (areas[w]-areaVar >= areas[w + 1]  and areas[w]-areaVar >= areas[w - 1]) :
             idelChecker += 1

@@ -8,10 +8,10 @@ import rotationMagnitude as rotMag
 
 def main():
     # Define input and output folders
-    plyInputFolder = "/Users/lukebray/Fall2024/CE_Design/Data/TEST1/ply_files"
-    metadataFolder = "/Users/lukebray/Fall2024/CE_Design/Data/TEST1/txt_files"
-    pcdIntermediateFolder = "/Users/lukebray/PycharmProjects/LASER2/Data/pcd_files"  # Folder for converted PCD files
-    outputPCDFolder = "/Users/lukebray/PycharmProjects/LASER2/OutputPCD/Test_1"
+    plyInputFolder = r"C:\Users\olson\Documents\Location\TEST7\ply_files"
+    metadataFolder = r"C:\Users\olson\Documents\Location\TEST7\txt_files"
+    pcdIntermediateFolder = r"C:\Users\olson\PycharmProjects\LASER2\Data\pcd_files"  # Folder for converted PCD files
+    outputPCDFolder = r"C:\Users\olson\PycharmProjects\LASER2\OutputPCD\Test_1"
 
     # Step 1: Convert PLY files to PCD
     print("Converting PLY files to PCD...")
