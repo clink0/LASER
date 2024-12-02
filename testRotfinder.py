@@ -23,7 +23,7 @@ def rotfinder(area, timeStamp):
         diffM = timeStamps[max_locations[ts+1]] - timeStamps[max_locations[ts]]
         maxArr = np.append(maxArr, diffM)
         diffm = timeStamps[min_locations[ts+1]] - timeStamps[min_locations[ts]]
-        minArr = np.append(minArr, diffM)
+        minArr = np.append(minArr, diffm)
 
     aveMaxDiff = np.average(maxArr)
     aveMinDiff = np.average(minArr)
