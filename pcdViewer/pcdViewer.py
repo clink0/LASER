@@ -27,7 +27,7 @@ def visualizePointCloud(inputFile):
 
 if __name__ == "__main__":
     # Set the input file path here
-    inputFile = "/Users/lukebray/PycharmProjects/LASER/findRotation/background.pcd"
+    inputFile = r"C:\Users\olson\Documents\Location\lukeFixedData\filtered_NEWBG60_311081.19599999999627.pcd"
 
     # Visualize the point cloud
     visualizePointCloud(inputFile)

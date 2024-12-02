@@ -4,15 +4,24 @@
 import os
 import numpy as np
 import pandas as pd
+import re
 
 def timeStamps(folder_path):
+    def extract_number(filename):
+        # Adjust the regex to capture the numeric part after '_metadata_'
+        match = re.search(r'_metadata_(\d+\.\d+)', filename)
+        return float(match.group(1)) if match else float('inf')  # Use a high value for files without numbers
     # Enter folder path that contains Metadata.
-    numFrames = 300  # Number of frames user wants to check
+    # Get all files in the folder
+    numFrames = 1000  # Number of frames user wants to check
     x = 0  # Counter Varible
     # Intializing needed arrays to store data
-    timeStamps, counter, framesPerSec = np.zeros(numFrames), np.zeros(numFrames), np.zeros(numFrames - 2)
+    timeStamps, counter = np.zeros(numFrames), np.zeros(numFrames)
     # Loop through all items in the folder
-    for filename in os.listdir(folder_path):
+    sortedFiles = sorted(os.listdir(folder_path), key=extract_number)
+    for filename in sortedFiles:
+        if filename.startswith("._"):
+            continue
         if x >= numFrames:
             break
         file_path = os.path.join(folder_path, filename)

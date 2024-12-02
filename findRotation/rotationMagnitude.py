@@ -4,12 +4,19 @@ import isolateBackground
 from cleanupData import metaDataExtractor as meta
 import os
 import numpy as np
+import re
 
 def calRotationMagnitude(folder_path,timeStamps):
     # Calculates the magnitude of the rotation of an object
+    def extract_number(filename):
+        # Adjust the regex to capture the numeric part after '_metadata_'
+        match = re.search(r'_metadata_(\d+\.\d+)', filename)
+        return float(match.group(1)) if match else float('inf')  # Use a high value for files without numbers
     x = 0
+    idelChecker = 0 # Checks if zero rotation
     whiteSpace = np.zeros(len(timeStamps)) # Array of the white space amount for the area of each frame
-    for filename in os.listdir(folder_path):
+    sortedFiles = sorted(os.listdir(folder_path), key=extract_number)
+    for filename in sortedFiles:
         if filename.startswith("._"):
             continue
         if x >= len(timeStamps):
@@ -25,7 +32,13 @@ def calRotationMagnitude(folder_path,timeStamps):
     for w in range(0, len(whiteSpace) - 1):
         if w >= len(whiteSpace) - 1:
             break
-        # Local maxs
+        if (whiteSpace[w]+500 <= whiteSpace[w + 1]  and whiteSpace[w]+500 <= whiteSpace[w - 1])  or (whiteSpace[w]-500 >= whiteSpace[w + 1]  and whiteSpace[w]-500 >= whiteSpace[w - 1]) :
+            idelChecker += 1
+        else:
+            idelChecker = 0
+        if idelChecker >= 5:
+            return 0
+        #Local maxs
         if whiteSpace[w] > whiteSpace[w - 1] and whiteSpace[w] > whiteSpace[w + 1] and whiteSpace[w] > whiteSpace[
             w - 2] and whiteSpace[w] > whiteSpace[w + 2]:
             maxArr[w] = whiteSpace[w]
@@ -57,4 +70,4 @@ def calRotationMagnitude(folder_path,timeStamps):
     rpm = (1 / (2 * aveTimeDiff)) * 60 # Converting to Rotations per minute
     return rpm
 
-calRotationMagnitude(r'C:\Users\olson\Documents\Location\lukeFixedData',meta.timeStamps(r'C:\Users\olson\Documents\Location\NewBG60\txt_files'))
+print(calRotationMagnitude(r'C:\Users\olson\Documents\Location\FINAL_1\ply_files',meta.timeStamps(r'C:\Users\olson\Documents\Location\FINAL_1\txt_files')))
