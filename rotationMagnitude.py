@@ -1,5 +1,6 @@
 import numpy as np
 
+
 def calRotationMagnitude(area,timeStamp):
     # Calculates the magnitude of the rotation of an object
     areas = np.load(area)
@@ -9,27 +10,26 @@ def calRotationMagnitude(area,timeStamp):
     minArr = np.zeros(int(len(timeStamps)))
     maxArr = np.zeros(int(len(timeStamps)))
     areaVar = .01
-    scanner = 9
     # Finding local mins and maxs
     for w in range(0, len(areas) - 2):
         if w >= len(areas) - 2:
             break
-        for h in range(0, scanner):
-            if (areas[w]+areaVar <= areas[w + scanner]  and areas[w]+areaVar <= areas[w - scanner]):
-                idelChecker += 1
-                break
-            else:
-                idelChecker = 0
-            if idelChecker >= 5:
-                return 0
-            #Local maxs
-            if areas[w] > areas[w - scanner] and areas[w] > areas[w + scanner] :
-                maxArr[w] = areas[w]
-                break
-            # Local Mins
-            if (areas[w] < areas[w - scanner]) and (areas[w] < areas[w + scanner]):
-                minArr[w] = areas[w]
-                break
+
+        if (areas[w]+areaVar <= areas[w + 1]  and areas[w]+areaVar <= areas[w - 1])  or (areas[w]-areaVar >= areas[w + 1]  and areas[w]-areaVar >= areas[w - 1]) :
+            idelChecker += 1
+        else:
+            idelChecker = 0
+        if idelChecker >= 5:
+            return 0
+        #Local maxs
+        if areas[w] > areas[w - 1] and areas[w] > areas[w + 1] and areas[w] > areas[
+            w - 2] and areas[w] > areas[w + 2]:
+            maxArr[w] = areas[w]
+            continue
+        # Local Mins
+        if (areas[w] < areas[w - 1]) and (areas[w] < areas[w + 1]) and (
+                areas[w] < areas[w - 2]) and (areas[w] < areas[w + 2]):
+            minArr[w] = areas[w]
     maxAve = np.zeros(0)
     minAve = np.zeros(0)
     prevValM, prevValm = 0, 0
