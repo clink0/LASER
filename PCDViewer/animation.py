@@ -51,7 +51,7 @@ def display_pcd_animation(pcd_folder, display_time=0.5):
 
 if __name__ == "__main__":
     # Replace with your folder containing .pcd files
-    pcd_folder = "/Users/lukebray/PycharmProjects/LASER2/OutputPCD/Test_1"
-    display_time = 0.02  # Time in seconds to display each point cloud
+    pcd_folder = "/Users/lukebray/PycharmProjects/LASER2/OutputPCD/Test_new_speed"
+    display_time = 0.1  # Time in seconds to display each point cloud
 
     display_pcd_animation(pcd_folder, display_time)
