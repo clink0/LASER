@@ -1,60 +1,51 @@
+# MetaData Extractor
+# The file takes in text files, specifically from a Realsense L515 Cam
+# and extractors the metadata which includes the frame number, and timestamps in micro seconds
 import os
 import numpy as np
-
+import re
 
 def timeStamps(folder_path):
-    """
-    Extracts metadata from text files in a folder, specifically frame timestamps and counters,
-    and ensures they are sorted by frame counter.
-
-    Parameters:
-    - folder_path (str): Path to the folder containing metadata text files.
-
-    Returns:
-    - np.ndarray: Array of timestamps in seconds, sorted by frame counter.
-    """
-    numFrames = 300  # Number of frames to process
-    x = 0  # Counter Variable
-
-    # Initializing lists to store data
-    timestamps = []
-    counters = []
-
+    def extract_number(filename):
+        # Adjust the regex to capture the numeric part after '_metadata_'
+        match = re.search(r'_metadata_(\d+\.\d+)', filename)
+        return float(match.group(1)) if match else float('inf')  # Use a high value for files without numbers
+    # Enter folder path that contains Metadata.
+    # Get all files in the folder
+    numFrames = 1000  # Number of frames user wants to check
+    x = 0  # Counter Varible
+    # Intializing needed arrays to store data
+    timeStamps, counter = np.zeros(numFrames), np.zeros(numFrames)
     # Loop through all items in the folder
-    for filename in os.listdir(folder_path):
+    sortedFiles = sorted(os.listdir(folder_path), key=extract_number)
+    for filename in sortedFiles:
+        if filename.startswith("._"):
+            continue
         if x >= numFrames:
             break
         file_path = os.path.join(folder_path, filename)
         with open(file_path, 'r') as file:
             content = file.read()
         lines = content.splitlines()  # Split the content into lines
-        timestamp = None
-        frame_counter = None
         for line in lines:
-            # Extract timestamp from metadata
+            # Extracts Given timestamp from metaData
             if 'Frame Timestamp' in line:
-                timeVal = "".join(char for char in line if char.isdigit())
-                timestamp = float(timeVal) / 10 ** 6  # Convert from microseconds to seconds
-            # Extract frame counter
+                timeVal = ""
+                for char in line:
+                    if char.isdigit():
+                        timeVal += char
+                time_Val = float(timeVal) / 10 ** 6  # Converting TimeStamp from micro seconds to seconds
+                timeStamps[x] = time_Val
+            # Extracts Frame Number
             if 'Frame Counter' in line:
-                frameNum = "".join(char for char in line if char.isdigit())
-                frame_counter = int(frameNum)
-        if timestamp is not None and frame_counter is not None:
-            timestamps.append(timestamp)
-            counters.append(frame_counter)
+                frameNum = ""
+                for char in line:
+                    if char.isdigit():
+                        frameNum += char
+                frame_Num = float(frameNum)
+                counter[x] = frame_Num
+                if (x != 0) and not (counter[x] >= counter[x - 1]):
+                    # Checks if frames are in order
+                    raise SystemExit("ERROR: FRAMES OUT OF ORDER")
         x += 1  # Iterate through frames
-
-    # Combine timestamps and counters into a structured array
-    frame_data = np.array(list(zip(counters, timestamps)), dtype=[('counter', int), ('timestamp', float)])
-
-    # Sort the array by frame counter
-    sorted_data = np.sort(frame_data, order='counter')
-
-    # Extract the sorted timestamps
-    sorted_timestamps = sorted_data['timestamp']
-
-    # Log unordered frames (optional)
-    if not np.all(np.diff(sorted_data['counter']) >= 0):
-        print("Warning: Frames were out of order. They have been sorted.")
-
-    return sorted_timestamps
+    return timeStamps
