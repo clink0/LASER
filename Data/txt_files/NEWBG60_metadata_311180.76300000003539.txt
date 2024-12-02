@@ -1,0 +1,8 @@
+Stream: Depth
+Frame Counter: 4
+Frame Timestamp: 311180763
+Time Of Arrival: 1733084533681
+Backend Timestamp: 0
+Frame Laser Power: 100
+Frame Laser Power Mode: 0
+Raw Frame Size: 614400
