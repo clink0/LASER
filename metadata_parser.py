@@ -12,7 +12,7 @@ def timeStamps(folder_path):
         return float(match.group(1)) if match else float('inf')  # Use a high value for files without numbers
     # Enter folder path that contains Metadata.
     # Get all files in the folder
-    numFrames = 1000  # Number of frames user wants to check
+    numFrames = 4000  # Number of frames user wants to check
     x = 0  # Counter Varible
     # Intializing needed arrays to store data
     timeStamps, counter = np.zeros(numFrames), np.zeros(numFrames)

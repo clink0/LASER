@@ -4,6 +4,27 @@ import open3d as o3d
 from calculate_projection_area import calculate_projection_area
 from point_cloud_filtering import cleanAndClusterPointCloud
 
+def remove_outliers_y(data):
+    """
+    Removes outliers from the Y-dimension data based on the median.
+    - Retains only values greater than or equal to the median.
+    - Calculates the average of the filtered data.
+
+    Parameters:
+    - data (array-like): Y-dimension data (e.g., bounding box Y-dimensions).
+
+    Returns:
+    - filtered_data (np.ndarray): Filtered Y-dimension data.
+    - filtered_average (float): Average of the filtered data.
+    """
+    median_value = np.median(data)
+    filtered_data = data[data >= median_value]
+    filtered_average = np.mean(filtered_data) if len(filtered_data) > 0 else 0.0
+    print(f"\nMedian Y value: {median_value}")
+    print(f"Filtered Y values: {filtered_data}")
+    print(f"Average of filtered Y values: {filtered_average}")
+    return filtered_data, filtered_average
+
 def processFolder(folderPath, outputFolder, dynamic_z_offset=0.5, calculateBoundingBox=True):
     """
     Processes all PCD files in a given folder:
@@ -12,6 +33,7 @@ def processFolder(folderPath, outputFolder, dynamic_z_offset=0.5, calculateBound
     - Calculates the nearest average Z value for each frame and across all frames.
     - Calculates the average X, Y, and Z dimensions of all bounding boxes.
     - Scales the average dimensions using a scaling factor derived from the overall average Z value.
+    - Removes outliers from Y-dimensions before calculating their average.
 
     Parameters:
     - folderPath (str): Path to the input folder containing PCD files.
@@ -26,6 +48,7 @@ def processFolder(folderPath, outputFolder, dynamic_z_offset=0.5, calculateBound
         - 'average_z_values': Array of average Z values for filtered points for each file.
         - 'overall_average_z': The overall average Z value across all frames.
         - 'scaled_dimensions_cm': The scaled dimensions (X, Y, Z) in centimeters.
+        - 'filtered_y_average': Average of Y-dimensions after outlier removal.
     """
     if not os.path.exists(outputFolder):
         os.makedirs(outputFolder)
@@ -84,11 +107,21 @@ def processFolder(folderPath, outputFolder, dynamic_z_offset=0.5, calculateBound
 
     # Calculate the average bounding box dimensions
     if boundingBoxDimensions:
+        boundingBoxDimensions = np.array(boundingBoxDimensions)  # Convert to NumPy array
         average_bounding_box_dimensions = np.mean(boundingBoxDimensions, axis=0)
     else:
+        boundingBoxDimensions = np.zeros((0, 3))  # Empty array if no data
         average_bounding_box_dimensions = np.zeros(3)
 
     print(f"\nAverage bounding box dimensions (X, Y, Z): {average_bounding_box_dimensions}")
+
+    # Perform outlier removal and filtered Y-dimension average
+    y_dimensions = boundingBoxDimensions[:, 1]  # Extract Y-dimensions
+    _, filtered_y_average = remove_outliers_y(y_dimensions)
+
+    # Replace the Y-dimension in the average bounding box dimensions with the filtered Y average
+    if boundingBoxDimensions.size > 0:
+        average_bounding_box_dimensions[1] = filtered_y_average
 
     # Scaling factor calculation
     # Derived from the formula: S = -0.0287 * Z + 0.8376
@@ -105,4 +138,5 @@ def processFolder(folderPath, outputFolder, dynamic_z_offset=0.5, calculateBound
         'average_z_values': np.array(averageZValues),  # Converts to consistent NumPy array
         'overall_average_z': overall_average_z,  # Overall average Z value across all frames
         'scaled_dimensions_cm': scaled_dimensions_cm.tolist(),  # Scaled dimensions in cm
+        'filtered_y_average': filtered_y_average,  # Average of Y-dimensions after outlier removal
     }

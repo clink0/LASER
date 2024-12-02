@@ -8,10 +8,10 @@ import rotationMagnitude as rotMag
 
 def main():
     # Define input and output folders
-    plyInputFolder = "/Users/lukebray/Fall2024/CE_Design/Data/TEST1/ply_files"
-    metadataFolder = "/Users/lukebray/Fall2024/CE_Design/Data/TEST1/txt_files"
-    pcdIntermediateFolder = "/Users/lukebray/PycharmProjects/LASER2/Data/pcd_files"  # Folder for converted PCD files
-    outputPCDFolder = "/Users/lukebray/PycharmProjects/LASER2/OutputPCD/Test_1"
+    plyInputFolder = "/Users/lukebray/Fall2024/CE_Design/Data/TEST3/ply_files"
+    metadataFolder = "/Users/lukebray/Fall2024/CE_Design/Data/TEST3/txt_files"
+    pcdIntermediateFolder = "/Users/lukebray/PycharmProjects/LASER2/Data/pcd_files_3"  # Folder for converted PCD files
+    outputPCDFolder = "/Users/lukebray/PycharmProjects/LASER2/OutputPCD/Test_3"
 
     # Step 1: Convert PLY files to PCD
     print("Converting PLY files to PCD...")
@@ -60,6 +60,7 @@ def main():
 
     print(f"\nOverall average Z value across all frames: {results['overall_average_z']}")
     print(f"\nScaled dimensions (X, Y, Z) in cm: {results['scaled_dimensions_cm']}")
+
     # Step 6: Calculate the magnitude of the rotation
     rpm = rotMag.calRotationMagnitude(areas_file, timestamps_file)
     print(f"\nRPM: {rpm}")

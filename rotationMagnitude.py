@@ -11,7 +11,7 @@ def calRotationMagnitude(area,timeStamp):
     areaVar = .03
     # Finding local mins and maxs
     for w in range(0, len(areas) - 1):
-        if w >= len(areas) - 1:
+        if w >= len(areas) - 2:
             break
         if (areas[w]+areaVar <= areas[w + 1]  and areas[w]+areaVar <= areas[w - 1])  or (areas[w]-areaVar >= areas[w + 1]  and areas[w]-areaVar >= areas[w - 1]) :
             idelChecker += 1
