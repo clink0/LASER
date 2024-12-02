@@ -3,6 +3,7 @@ import numpy as np
 from ply_to_pcd_converter import convertPLYtoPCD  # Import the function from the external file
 from folder_processor import processFolder  # Ensure this imports your processFolder function
 from metadata_parser import timeStamps  # Import timeStamps function
+import rotationMagnitude as rotMag
 
 
 def main():
@@ -59,7 +60,9 @@ def main():
 
     print(f"\nOverall average Z value across all frames: {results['overall_average_z']}")
     print(f"\nScaled dimensions (X, Y, Z) in cm: {results['scaled_dimensions_cm']}")
-
+    # Step 6: Calculate the magnitude of the rotation
+    rpm = rotMag.calRotationMagnitude(areas_file, timestamps_file)
+    print(f"\nRPM: {rpm}")
     print("\nProcessing complete.")
 
 
