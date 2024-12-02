@@ -4,13 +4,14 @@ import open3d as o3d
 from calculate_projection_area import calculate_projection_area
 from point_cloud_filtering import cleanAndClusterPointCloud
 
-
 def processFolder(folderPath, outputFolder, dynamic_z_offset=0.5, calculateBoundingBox=True):
     """
     Processes all PCD files in a given folder:
-    - Runs the updated `cleanAndClusterPointCloud` for dynamic Z filtering and bounding box calculations.
+    - Runs the updated cleanAndClusterPointCloud for dynamic Z filtering and bounding box calculations.
     - Uses the 2D projection method to calculate the bounding area.
     - Calculates the nearest average Z value for each frame and across all frames.
+    - Calculates the average X, Y, and Z dimensions of all bounding boxes.
+    - Scales the average dimensions using a scaling factor derived from the overall average Z value.
 
     Parameters:
     - folderPath (str): Path to the input folder containing PCD files.
@@ -24,6 +25,7 @@ def processFolder(folderPath, outputFolder, dynamic_z_offset=0.5, calculateBound
         - 'projection_areas': Array of 2D bounding areas for each projection.
         - 'average_z_values': Array of average Z values for filtered points for each file.
         - 'overall_average_z': The overall average Z value across all frames.
+        - 'scaled_dimensions_cm': The scaled dimensions (X, Y, Z) in centimeters.
     """
     if not os.path.exists(outputFolder):
         os.makedirs(outputFolder)
@@ -80,9 +82,27 @@ def processFolder(folderPath, outputFolder, dynamic_z_offset=0.5, calculateBound
     overall_average_z = np.mean(averageZValues) if averageZValues else 0.0
     print(f"\nOverall average Z value across all frames: {overall_average_z}")
 
+    # Calculate the average bounding box dimensions
+    if boundingBoxDimensions:
+        average_bounding_box_dimensions = np.mean(boundingBoxDimensions, axis=0)
+    else:
+        average_bounding_box_dimensions = np.zeros(3)
+
+    print(f"\nAverage bounding box dimensions (X, Y, Z): {average_bounding_box_dimensions}")
+
+    # Scaling factor calculation
+    # Derived from the formula: S = -0.0287 * Z + 0.8376
+    scaling_factor = -0.0287 * overall_average_z + 0.8376
+    print(f"\nCalculated scaling factor: {scaling_factor}")
+
+    # Apply the scaling factor to average bounding box dimensions to get scaled dimensions in cm
+    scaled_dimensions_cm = average_bounding_box_dimensions * scaling_factor * 100
+    print(f"\nScaled dimensions (X, Y, Z) in cm: {scaled_dimensions_cm}")
+
     return {
         'bounding_boxes': np.array(boundingBoxDimensions),  # Converts to consistent NumPy array
         'projection_areas': np.array(projectionAreas),  # Converts to consistent NumPy array
         'average_z_values': np.array(averageZValues),  # Converts to consistent NumPy array
         'overall_average_z': overall_average_z,  # Overall average Z value across all frames
+        'scaled_dimensions_cm': scaled_dimensions_cm.tolist(),  # Scaled dimensions in cm
     }
