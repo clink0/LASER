@@ -3,15 +3,14 @@ import numpy as np
 from folder_processor import processFolder
 from ply_to_pcd_converter import convertPLYtoPCD  # Ensure this is implemented
 from extract_metadata import timeStamps  # Ensure this is implemented
-import rotationMagnitude as rotMag
 
 
 def main():
     # Define input and output folders
-    plyInputFolder = r"C:\Users\olson\Documents\Location\TEST7\ply_files"
-    pcdIntermediateFolder = r"C:\Users\olson\PycharmProjects\LASER2\Data\pcd_files"  # Folder for converted PCD files
-    outputPCDFolder = r"C:\Users\olson\PycharmProjects\LASER2\OutputPCD\Test_1"
-    metadataFolder = r"C:\Users\olson\Documents\Location\TEST7\txt_files"
+    plyInputFolder = "/Users/lukebray/PycharmProjects/LASER2/Data/ply_files"
+    pcdIntermediateFolder = "/Users/lukebray/PycharmProjects/LASER2/Data/pcd_files"  # Folder for converted PCD files
+    outputPCDFolder = "/Users/lukebray/PycharmProjects/LASER2/OutputPCD/Test_1"
+    metadataFolder = "/Users/lukebray/PycharmProjects/LASER2/Data/txt_files"
 
     # Step 1: Convert PLY files to PCD
     print("Converting PLY files to PCD...")
@@ -50,9 +49,6 @@ def main():
     for i, (dimensions, projection_area) in enumerate(zip(results['bounding_boxes'], results['projection_areas'])):
         print(f"File {i + 1}: Bounding Box Dimensions: {dimensions}, Projection Area: {projection_area}")
 
-    # Step 6: Calculating the Average Rpms over the course of the recording period
-    rpm = rotMag.calRotationMagnitude(areas_file, timestamps_file)
-    print(f"\nRotation Magnitude saved to: {rpm}")
     print("\nProcessing complete.")
 
 
