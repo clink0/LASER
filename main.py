@@ -4,14 +4,15 @@ from ply_to_pcd_converter import convertPLYtoPCD  # Import the function from the
 from folder_processor import processFolder  # Ensure this imports your processFolder function
 from metadata_parser import timeStamps  # Import timeStamps function
 import rotationMagnitude as rotMag
+import testRotfinder as rotFinder
 
 
 def main():
     # Define input and output folders
-    plyInputFolder = "/Users/lukebray/Fall2024/CE_Design/Data/TEST3/ply_files"
-    metadataFolder = "/Users/lukebray/Fall2024/CE_Design/Data/TEST3/txt_files"
-    pcdIntermediateFolder = "/Users/lukebray/PycharmProjects/LASER2/Data/pcd_files_3"  # Folder for converted PCD files
-    outputPCDFolder = "/Users/lukebray/PycharmProjects/LASER2/OutputPCD/Test_3"
+    plyInputFolder = "/Users/lukebray/Fall2024/CE_Design/Data/Test2/ply_files"
+    metadataFolder = "/Users/lukebray/Fall2024/CE_Design/Data/Test2/txt_files"
+    pcdIntermediateFolder = "/Users/lukebray/PycharmProjects/LASER2/Data/pcd_files_Test2"  # Folder for converted PCD files
+    outputPCDFolder = "/Users/lukebray/PycharmProjects/LASER2/OutputPCD/Test2"
 
     # Step 1: Convert PLY files to PCD
     print("Converting PLY files to PCD...")
@@ -29,6 +30,7 @@ def main():
     results = processFolder(
         folderPath=pcdIntermediateFolder,
         outputFolder=outputPCDFolder,
+        timestamps=timestamps,  # Pass the extracted timestamps here
         dynamic_z_offset=0.5,  # Adjust this value as needed
         calculateBoundingBox=True
     )
@@ -39,18 +41,21 @@ def main():
     timestamps_file = os.path.join(outputPCDFolder, "timestamps.npy")
     average_z_file = os.path.join(outputPCDFolder, "overall_average_z.npy")
     scaled_dimensions_file = os.path.join(outputPCDFolder, "scaled_dimensions_cm.npy")
+    angular_velocities_file = os.path.join(outputPCDFolder, "angular_velocities.npy")  # Save angular velocities
 
     np.save(dimensions_file, results['bounding_boxes'])
     np.save(areas_file, results['projection_areas'])
     np.save(timestamps_file, np.array(timestamps))
     np.save(average_z_file, np.array([results['overall_average_z']]))
     np.save(scaled_dimensions_file, results['scaled_dimensions_cm'])
+    np.save(angular_velocities_file, np.array(results['angular_velocities']))  # Save angular velocities
 
     print(f"\nBounding box dimensions saved to: {dimensions_file}")
     print(f"Projection areas saved to: {areas_file}")
     print(f"Timestamps saved to: {timestamps_file}")
     print(f"Overall average Z value saved to: {average_z_file}")
     print(f"Scaled dimensions in cm saved to: {scaled_dimensions_file}")
+    print(f"Angular velocities saved to: {angular_velocities_file}")
 
     # Step 5: Print bounding box dimensions, projection areas, and overall average Z
     print("\nResults for Each Processed File:")
@@ -60,11 +65,12 @@ def main():
 
     print(f"\nOverall average Z value across all frames: {results['overall_average_z']}")
     print(f"\nScaled dimensions (X, Y, Z) in cm: {results['scaled_dimensions_cm']}")
+    print(f"\nAngular velocities (radians/sec): {results['angular_velocities']}")
 
     # Step 6: Calculate the magnitude of the rotation
-    rpm = rotMag.calRotationMagnitude(areas_file, timestamps_file)
-    print(f"\nRPM: {rpm}")
-    print("\nProcessing complete.")
+    #rpm = rotMag.calRotationMagnitude(areas_file, timestamps_file)
+    #print(f"\nRPM: {rpm}")
+    #print("\nProcessing complete.")
 
 
 if __name__ == "__main__":
