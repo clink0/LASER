@@ -4,7 +4,7 @@ import numpy as np
 np.set_printoptions(threshold=np.inf)
 
 # Load the .npy file
-file_path = 'your_file.npy'  # Replace with your file path
+file_path = '/Users/lukebray/PycharmProjects/LASER2/OutputPCD/Test2/angular_velocities.npy'  # Replace with your file path
 data = np.load(file_path)
 
 # Print the full array

@@ -26,7 +26,7 @@ def display_pcd_animation(pcd_folder, display_time=0.5):
     vis.create_window(window_name="PCD Animation", width=1600, height=1200)
 
     for i, pcd_file in enumerate(pcd_files):
-        print(f"Displaying file {i + 1}/{len(pcd_files)}: {pcd_file}")
+        #print(f"Displaying file {i + 1}/{len(pcd_files)}: {pcd_file}")
 
         # Load the point cloud
         pcd = o3d.io.read_point_cloud(pcd_file)
@@ -51,7 +51,7 @@ def display_pcd_animation(pcd_folder, display_time=0.5):
 
 if __name__ == "__main__":
     # Replace with your folder containing .pcd files
-    pcd_folder = "/Users/lukebray/PycharmProjects/LASER2/OutputPCD/new_speed"
+    pcd_folder = "/Users/lukebray/PycharmProjects/LASER2/OutputPCD/Test1"
     display_time = 0.0333333  # Time in seconds to display each point cloud
 
     display_pcd_animation(pcd_folder, display_time)

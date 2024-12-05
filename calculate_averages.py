@@ -14,7 +14,6 @@ def calculateAverageDimensions(dimensions_file, output_file=None):
     try:
         # Step 1: Load the bounding box dimensions
         dimensions = np.load(dimensions_file)  # Shape: (num_frames, 3)
-        print(f"Loaded bounding box dimensions from: {dimensions_file}")
 
         # Step 2: Calculate the average dimensions
         average_dimensions = np.mean(dimensions, axis=0)  # Mean along the rows (frames)
@@ -22,7 +21,6 @@ def calculateAverageDimensions(dimensions_file, output_file=None):
         # Step 3: Save the average dimensions if output_file is specified
         if output_file:
             np.save(output_file, average_dimensions)
-            print(f"Average dimensions saved to: {output_file}")
 
         return average_dimensions
 

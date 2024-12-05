@@ -3,16 +3,15 @@ import numpy as np
 from ply_to_pcd_converter import convertPLYtoPCD  # Import the function from the external file
 from folder_processor import processFolder  # Ensure this imports your processFolder function
 from metadata_parser import timeStamps  # Import timeStamps function
-import rotationMagnitude as rotMag
-import testRotfinder as rotFinder
+from animation import display_pcd_animation  # Import the animation function
 
 
 def main():
     # Define input and output folders
-    plyInputFolder = "/Users/lukebray/Fall2024/CE_Design/Data/Test2/ply_files"
-    metadataFolder = "/Users/lukebray/Fall2024/CE_Design/Data/Test2/txt_files"
-    pcdIntermediateFolder = "/Users/lukebray/PycharmProjects/LASER2/Data/pcd_files_Test2"  # Folder for converted PCD files
-    outputPCDFolder = "/Users/lukebray/PycharmProjects/LASER2/OutputPCD/Test2"
+    plyInputFolder = "/Users/lukebray/Fall2024/CE_Design/Data/Test1/ply_files"
+    metadataFolder = "/Users/lukebray/Fall2024/CE_Design/Data/Test1/txt_files"
+    pcdIntermediateFolder = "/Users/lukebray/PycharmProjects/LASER2/Data/pcd_files_Test1"  # Folder for converted PCD files
+    outputPCDFolder = "/Users/lukebray/PycharmProjects/LASER2/OutputPCD/Test1"
 
     # Step 1: Convert PLY files to PCD
     print("Converting PLY files to PCD...")
@@ -23,7 +22,6 @@ def main():
     # Step 2: Extract timestamps
     print("Extracting timestamps from metadata...")
     timestamps = timeStamps(metadataFolder)
-    print(f"Extracted timestamps: {timestamps}")
 
     # Step 3: Process PCD files to filter, create projections, and calculate bounding boxes/projection areas
     print("\nProcessing PCD files to filter and calculate bounding boxes and projection areas...")
@@ -36,41 +34,18 @@ def main():
     )
 
     # Step 4: Save results
-    dimensions_file = os.path.join(outputPCDFolder, "bounding_box_dimensions.npy")
-    areas_file = os.path.join(outputPCDFolder, "projection_areas.npy")
-    timestamps_file = os.path.join(outputPCDFolder, "timestamps.npy")
-    average_z_file = os.path.join(outputPCDFolder, "overall_average_z.npy")
     scaled_dimensions_file = os.path.join(outputPCDFolder, "scaled_dimensions_cm.npy")
-    angular_velocities_file = os.path.join(outputPCDFolder, "angular_velocities.npy")  # Save angular velocities
-
-    np.save(dimensions_file, results['bounding_boxes'])
-    np.save(areas_file, results['projection_areas'])
-    np.save(timestamps_file, np.array(timestamps))
-    np.save(average_z_file, np.array([results['overall_average_z']]))
     np.save(scaled_dimensions_file, results['scaled_dimensions_cm'])
-    np.save(angular_velocities_file, np.array(results['angular_velocities']))  # Save angular velocities
-
-    print(f"\nBounding box dimensions saved to: {dimensions_file}")
-    print(f"Projection areas saved to: {areas_file}")
-    print(f"Timestamps saved to: {timestamps_file}")
-    print(f"Overall average Z value saved to: {average_z_file}")
-    print(f"Scaled dimensions in cm saved to: {scaled_dimensions_file}")
-    print(f"Angular velocities saved to: {angular_velocities_file}")
-
-    # Step 5: Print bounding box dimensions, projection areas, and overall average Z
-    print("\nResults for Each Processed File:")
-    for i, (dimensions, projection_area, avg_z) in enumerate(
-            zip(results['bounding_boxes'], results['projection_areas'], results['average_z_values'])):
-        print(f"File {i + 1}: Bounding Box Dimensions: {dimensions}, Projection Area: {projection_area}, Average Z: {avg_z}")
-
-    print(f"\nOverall average Z value across all frames: {results['overall_average_z']}")
     print(f"\nScaled dimensions (X, Y, Z) in cm: {results['scaled_dimensions_cm']}")
-    print(f"\nAngular velocities (radians/sec): {results['angular_velocities']}")
 
-    # Step 6: Calculate the magnitude of the rotation
-    #rpm = rotMag.calRotationMagnitude(areas_file, timestamps_file)
-    #print(f"\nRPM: {rpm}")
-    #print("\nProcessing complete.")
+    # Step 5: Display the animation with additional information
+    print("\nStarting point cloud animation...")
+    average_rpm = results['rpm']
+    scaled_dimensions = results['scaled_dimensions_cm']
+    display_time = 0.0333333  # Time in seconds to display each point cloud
+    display_pcd_animation(outputPCDFolder, display_time, average_rpm, scaled_dimensions)
+
+    print("\nProcessing complete.")
 
 
 if __name__ == "__main__":

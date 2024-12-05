@@ -1,4 +1,5 @@
 import numpy as np
+from scipy import stats
 
 def get_plane_normal(pcd):
     """
@@ -12,12 +13,12 @@ def get_plane_normal(pcd):
     normal_vector /= np.linalg.norm(normal_vector)  # Normalize the vector
     return normal_vector
 
-
-def calculate_rpm(normal_vectors, timestamps):
+def calculate_rpm(normal_vectors, timestamps, precision=2):
     """
     Calculate rotations per minute (RPM) from normal vectors and timestamps.
     - normal_vectors: List of normal vectors (Nx3 array).
     - timestamps: List of timestamps corresponding to the normal vectors.
+    - precision: Rounding precision for angular velocities.
 
     Returns:
     - RPM value.
@@ -39,9 +40,16 @@ def calculate_rpm(normal_vectors, timestamps):
         angular_velocity = angle / time_diff if time_diff > 0 else 0
         angular_velocities.append(angular_velocity)
 
-    # Average angular velocity (radians per second)
-    median_angular_velocity = np.median(angular_velocities) if angular_velocities else 0
+    # Round angular velocities to handle "close enough" values
+    rounded_angular_velocities = [round(val, precision) for val in angular_velocities]
+
+    # Calculate mode
+    if rounded_angular_velocities:
+        mode_result = stats.mode(rounded_angular_velocities)
+        mode_angular_velocity = np.atleast_1d(mode_result.mode)[0] if mode_result.mode.size > 0 else 0
+    else:
+        mode_angular_velocity = 0
 
     # Convert to RPM (revolutions per minute)
-    rpm = (median_angular_velocity * 60) / (2 * np.pi)
+    rpm = (mode_angular_velocity * 60) / (2 * np.pi)
     return rpm, angular_velocities
