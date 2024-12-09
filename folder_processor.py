@@ -97,12 +97,13 @@ def processFolder(folderPath, outputFolder, timestamps, dynamic_z_offset=0.5, ca
     scaling_factor = -0.0287 * overall_average_z + 0.8376
 
     scaled_dimensions_cm = average_bounding_box_dimensions * scaling_factor * 100
+    scaled_bounding_box_dimensions = boundingBoxDimensions * scaling_factor * 100
 
     rpm, angular_velocities = calculate_rpm(normalVectors, timestamps)  # Imported function
     print(f"\nCalculated RPM: {rpm}")
 
     return {
-        'bounding_boxes': np.array(boundingBoxDimensions),
+        'scaled_bounding_boxes': np.array(scaled_bounding_box_dimensions),
         'average_z_values': np.array(averageZValues),
         'overall_average_z': overall_average_z,
         'scaled_dimensions_cm': scaled_dimensions_cm.tolist(),
